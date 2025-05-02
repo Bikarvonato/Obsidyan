@@ -1,0 +1,331 @@
+/* Estilo global */
+@import 'react-big-calendar/lib/css/react-big-calendar.css';
+@import 'react-datepicker/dist/react-datepicker.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Define Variables for easier color management */
+:root {
+  --color-primary: #4f46e5; /* Indigo-600 */
+  --color-primary-dark: #3730a3; /* Indigo-800 */
+  --color-primary-light: #a5b4fc; /* Indigo-300 */
+  --color-secondary: #0d9488; /* Teal-600 */
+  --color-accent: #ec4899; /* Pink-500 */
+  --color-accent-hover: #db2777; /* Pink-600 */
+  --color-danger: #dc2626; /* Red-600 */
+  --color-danger-hover: #b91c1c; /* Red-700 */
+  --color-bg-light: #f9fafb; /* Gray-50 */
+  --color-bg-dark: #111827; /* Gray-900 */
+  --color-text-light: #f3f4f6; /* Gray-100 */
+  --color-text-dark: #1f2937; /* Gray-800 */
+  --color-text-medium: #6b7280; /* Gray-500 */
+  --color-border-light: #e5e7eb; /* Gray-200 */
+  --color-border-dark: #374151; /* Gray-700 */
+  --color-card-light: rgba(255, 255, 255, 0.9);
+  --color-card-dark: rgba(31, 41, 55, 0.8); /* Gray-800 with opacity */
+}
+
+.dark {
+  --color-primary: #6366f1; /* Indigo-500 */
+  --color-primary-dark: #4f46e5; /* Indigo-600 */
+  --color-primary-light: #818cf8; /* Indigo-400 */
+  --color-secondary: #2dd4bf; /* Teal-400 */
+  --color-accent: #f472b6; /* Pink-400 */
+  --color-accent-hover: #ec4899; /* Pink-500 */
+  --color-danger: #f87171; /* Red-400 */
+  --color-danger-hover: #ef4444; /* Red-500 */
+  --color-bg-light: #1f2937; /* Gray-800 */
+  --color-bg-dark: #030712; /* Gray-950 */
+  --color-text-light: #1f2937; /* Gray-800 */
+  --color-text-dark: #f9fafb; /* Gray-50 */
+  --color-text-medium: #9ca3af; /* Gray-400 */
+  --color-border-light: #4b5563; /* Gray-600 */
+  --color-border-dark: #1f2937; /* Gray-800 */
+  --color-card-light: rgba(55, 65, 81, 0.9); /* Gray-700 with opacity */
+  --color-card-dark: rgba(17, 24, 39, 0.85); /* Gray-900 with opacity */
+}
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-blue-950 via-indigo-950 to-purple-950 text-[var(--color-text-dark)] dark:text-[var(--color-text-light)] font-sans antialiased transition-colors duration-300;
+    min-height: 100vh;
+  }
+
+  #root {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* === Enhanced Button Styles === */
+  .btn {
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-semibold text-sm shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 ease-in-out transform hover:scale-[1.03];
+  }
+
+  .btn-primary {
+    @apply btn bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] focus:ring-[var(--color-accent)];
+    /* Add subtle glow */
+    box-shadow: 0 0 15px 0px rgba(236, 72, 153, 0.4); /* Adjust pink color */
+    /* Add pulsing animation on hover maybe? */
+  }
+   .btn-primary:disabled {
+     @apply bg-gray-400 dark:bg-gray-600 cursor-not-allowed scale-100 shadow-none;
+   }
+
+
+  .btn-secondary {
+    @apply btn bg-[var(--color-secondary)] text-white hover:bg-[color:var(--color-secondary)]/90 focus:ring-[var(--color-secondary)];
+  }
+
+  .btn-danger {
+    @apply btn bg-transparent text-[var(--color-danger)] border border-[var(--color-danger)] hover:bg-[var(--color-danger)] hover:text-white focus:ring-[var(--color-danger)];
+  }
+   .btn-danger:disabled {
+     @apply border-gray-400 text-gray-400 dark:border-gray-600 dark:text-gray-600 hover:bg-transparent hover:text-gray-400 dark:hover:text-gray-600 cursor-not-allowed scale-100;
+   }
+
+
+  .btn-outline {
+    @apply btn border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white focus:ring-[var(--color-primary)];
+  }
+
+  .btn-ghost {
+      @apply btn bg-transparent text-[var(--color-text-dark)] dark:text-[var(--color-text-light)] hover:bg-gray-500/10 focus:ring-[var(--color-primary)] shadow-none hover:scale-100;
+  }
+
+  .btn-icon {
+     @apply p-2 rounded-full;
+  }
+
+
+  /* === Card Styling === */
+  .card {
+    @apply bg-[var(--color-card-light)] dark:bg-[var(--color-card-dark)] rounded-xl shadow-xl overflow-hidden transition-all duration-300 backdrop-blur-md border border-white/10 dark:border-white/5;
+    /* Subtle border */
+  }
+
+  /* === Input Fields === */
+  .input-base {
+    @apply block w-full py-2.5 px-4 border border-[var(--color-border-light)] dark:border-[var(--color-border-dark)] rounded-lg bg-white dark:bg-gray-700 text-[var(--color-text-dark)] dark:text-[var(--color-text-light)] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition duration-200 shadow-sm;
+    /* Explicitly set text color */
+    color: var(--color-text-dark); /* FIX: Ensure text is visible */
+  }
+
+   .dark .input-base {
+       color: var(--color-text-light); /* FIX: Ensure text is visible in dark mode */
+   }
+
+  /* Ensure react-datepicker input also uses these styles */
+  .react-datepicker-wrapper input[type="text"].input-base {
+     /* Inherits .input-base styles */
+  }
+
+  /* === Appointment List Item === */
+  .appointment-item {
+    @apply flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg border border-transparent transition-all duration-300 hover:shadow-lg hover:border-[var(--color-accent)] hover:border-opacity-50 hover:bg-white/[0.02] dark:hover:bg-white/[0.05];    /* background: linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0)); /* Subtle gradient maybe? */
+  }
+
+  .appointment-item-past {
+    @apply opacity-60 hover:opacity-80 border-gray-500/30;
+  }
+
+}
+
+@layer utilities {
+  /* === Text Shadow === */
+   .text-shadow-md {
+        text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+   }
+   .text-shadow-lg {
+        text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.25);
+   }
+
+  /* === Animations === */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  }
+   @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(25px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+   /* Stagger children animation utility */
+   .stagger-children > * {
+     animation: fade-in-up 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+     animation-delay: calc(var(--stagger-index, 0) * 70ms); /* Adjust delay */
+     opacity: 0; /* Start hidden */
+   }
+
+   /* Gradient Animation (Kept from original) */
+   .animate-gradient {
+       background-size: 200% 200%; /* Smoother gradient animation */
+       animation: gradient 8s linear infinite;
+   }
+   @keyframes gradient {
+       0% { background-position: 0% 50%; }
+       50% { background-position: 100% 50%; }
+       100% { background-position: 0% 50%; }
+   }
+
+   /* Sidebar Active Link Effect */
+   .sidebar-link-active {
+        @apply bg-[var(--color-accent)] text-white shadow-inner relative overflow-hidden;
+        /* Add a subtle animated element */
+   }
+    .sidebar-link-active::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        animation: shimmer 2.5s infinite;
+    }
+
+    @keyframes shimmer {
+        100% {
+            left: 100%;
+        }
+    }
+
+  /* === FullCalendar Customization === */
+  /* General Container */
+  .rbc-calendar {
+    @apply bg-transparent text-[var(--color-text-dark)] dark:text-[var(--color-text-light)];
+    height: 75vh !important; /* Ensure it takes good height */
+  }
+
+  /* Toolbar */
+  .rbc-toolbar {
+    @apply mb-4 flex flex-wrap items-center justify-between gap-2;
+  }
+  .rbc-toolbar .rbc-toolbar-label {
+    @apply text-xl md:text-2xl font-bold text-shadow-md text-[var(--color-text-dark)] dark:text-[var(--color-text-light)];
+  }
+  .rbc-btn-group button {
+    @apply btn btn-ghost text-sm !important; /* Use btn-ghost */
+  }
+  .rbc-btn-group button.rbc-active {
+    @apply bg-[var(--color-accent)]/20 text-[var(--color-accent)] !important; /* Active view button */
+  }
+
+  /* Header Cells (Days of Week) */
+  .rbc-header {
+    @apply text-center py-2 border-b border-x-0 border-t-0 border-solid border-[var(--color-border-light)] dark:border-[var(--color-border-dark)];
+  }
+   .rbc-header span {
+       @apply text-xs font-semibold uppercase tracking-wider text-[var(--color-text-medium)];
+   }
+
+  /* Day Cells */
+  .rbc-day-bg {
+    @apply border border-[var(--color-border-light)]/50 dark:border-[var(--color-border-dark)]/50 transition-colors duration-200;
+  }
+  .rbc-day-bg:hover {
+      @apply bg-gray-500/5;
+  }
+  .rbc-today {
+    @apply bg-[var(--color-accent)]/10 dark:bg-[var(--color-accent)]/20; /* Highlight today */
+  }
+   .rbc-off-range-bg {
+       @apply bg-gray-500/5 dark:bg-gray-500/10; /* Dim out-of-month days */
+   }
+
+  /* Date Numbers */
+  .rbc-date-cell a, .rbc-date-cell a:visited {
+     @apply text-[var(--color-text-medium)] hover:text-[var(--color-accent)];
+  }
+
+
+  /* Events */
+  .rbc-event {
+    @apply !rounded-md !bg-[var(--color-secondary)] !text-white !p-1.5 text-xs shadow-md cursor-pointer transition-transform duration-200 hover:scale-[1.02];
+    border: none !important;
+  }
+  .rbc-event-label { /* Time inside event */
+      @apply font-semibold mr-1;
+  }
+  .rbc-event-content { /* Title inside event */
+    @apply truncate;
+  }
+
+  /* Time Grid */
+  .rbc-time-view .rbc-time-gutter {
+      /* Style the time labels on the left if needed */
+  }
+  .rbc-time-slot {
+      /* Style the hour/half-hour slots */
+  }
+  .rbc-current-time-indicator {
+    @apply !bg-[var(--color-danger)] opacity-80; /* Current time line */
+  }
+  .rbc-current-time-indicator::before {
+      content: '';
+      position: absolute;
+      left: -4px; /* Position the dot */
+      top: -4px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-danger);
+  }
+
+  /* === React DatePicker Customization === */
+  .react-datepicker {
+    @apply !rounded-lg !border-[var(--color-border-light)] dark:!border-[var(--color-border-dark)] !bg-[var(--color-card-light)] dark:!bg-[var(--color-card-dark)] shadow-lg font-sans;
+  }
+  .react-datepicker__header {
+    @apply !bg-[var(--color-primary-dark)] !text-white !rounded-t-lg !border-b-0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker__day-name {
+    @apply !text-white !font-semibold;
+  }
+   .react-datepicker__day-name {
+       @apply !text-gray-300 text-xs uppercase;
+   }
+
+  .react-datepicker__navigation {
+     @apply !top-3;
+  }
+  .react-datepicker__navigation--previous {
+     @apply !border-r-white;
+  }
+   .react-datepicker__navigation--next {
+       @apply !border-l-white;
+   }
+   .react-datepicker__navigation:hover *::before {
+       border-color: var(--color-accent) !important;
+   }
+
+  .react-datepicker__day {
+    @apply !text-[var(--color-text-dark)] dark:!text-[var(--color-text-light)] !m-0.5 transition-colors duration-200 rounded-full;
+  }
+  .react-datepicker__day:hover {
+    @apply !bg-[var(--color-accent)]/20;
+  }
+  .react-datepicker__day--selected, .react-datepicker__day--keyboard-selected {
+    @apply !bg-[var(--color-accent)] !text-white;
+  }
+  .react-datepicker__day--outside-month {
+    @apply !text-gray-400 dark:!text-gray-600;
+  }
+   .react-datepicker__day--disabled {
+       @apply !text-gray-300 dark:!text-gray-700 cursor-not-allowed;
+   }
+
+   .react-datepicker-popper {
+     z-index: 100 !important; /* Keep z-index */
+   }
+
+}
