@@ -1,330 +1,156 @@
-import React, { useState, useEffect } from 'react';
- import { TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
- import toast from 'react-hot-toast';
- 
- const countryCodes = [
-  { name: 'Andorra', code: '+376' },
-  { name: 'España', code: '+34' },
-  { name: 'Francia', code: '+33' },
-  { name: 'Portugal', code: '+351' },
-  // ... más países
- ];
- 
- const ClientList = () => {
-  const [clients, setClients] = useState([]);
-  const [newClient, setNewClient] = useState({
-   nombre: '',
-   apellido: '',
-   documento: '',
-   pais: '+376', // Valor por defecto: Andorra
-   telefono: '',
-  });
+// src/components/ClientList.jsx – fixed toggle bug, Zustand version
+import React, { useState } from 'react';
+import { TrashIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
+import { useStore } from '../store';
+import Button from './ui/Button';
+import Input from './ui/Input';
+
+const emailOk = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+export default function ClientList() {
+  const clients        = useStore((s) => s.clients);
+  const addClient      = useStore((s) => s.addClient);
+  const updateClient   = useStore((s) => s.updateClient);
+  const deleteClient   = useStore((s) => s.deleteClient);
+
+  const [newClient, setNewClient] = useState({ nombre: '', apellido: '', correo: '', telefono: '' });
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
- 
-  useEffect(() => {
-   const storedClients = localStorage.getItem('clients');
-   if (storedClients) {
-    setClients(JSON.parse(storedClients));
-   }
-  }, []);
- 
-  useEffect(() => {
-   localStorage.setItem('clients', JSON.stringify(clients));
-  }, [clients]);
- 
-  const handleInputChange = (e) => {
-   const { name, value } = e.target;
-   setNewClient((prevClient) => ({
-    ...prevClient,
-    [name]: value,
-   }));
+  const [search, setSearch] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
+
+  const handleInput = (e) => setNewClient((p) => ({ ...p, [e.target.name]: e.target.value }));
+
+  const clearFields = () => setNewClient({ nombre: '', apellido: '', correo: '', telefono: '' });
+
+  const resetForm = () => {
+    clearFields();
+    setIsEditing(false);
+    setEditId(null);
   };
- 
-  const handleAddClient = () => {
-   if (
-    newClient.nombre &&
-    newClient.apellido &&
-    newClient.documento &&
-    newClient.pais &&
-    newClient.telefono
-   ) {
-    const isDocumentoDuplicado = clients.some(
-     (client) => client.documento === newClient.documento
-    );
- 
-    if (isDocumentoDuplicado) {
-     toast.error('Ya existe un cliente con ese número de documento.');
-     return;
+
+  const save = () => {
+    if (Object.values(newClient).some((v) => !v.trim())) {
+      return toast.error('Complete todos los campos.');
     }
- 
-    const newClientId = Date.now();
-    setClients((prevClients) => [
-     ...prevClients,
-     { ...newClient, id: newClientId },
-    ]);
-    setNewClient({
-     nombre: '',
-     apellido: '',
-     documento: '',
-     pais: '+376',
-     telefono: '',
-    });
-    setIsFormVisible(false);
-    toast.success('Cliente añadido correctamente');
-   } else {
-    toast.error('Por favor, rellene todos los campos.');
-   }
+    if (!emailOk(newClient.correo)) return toast.error('Correo inválido.');
+
+    const email = newClient.correo.toLowerCase();
+
+    if (isEditing) {
+      updateClient({ ...newClient, id: email });
+      toast.success('Cliente actualizado');
+    } else {
+      if (clients.some((c) => c.correo.toLowerCase() === email)) {
+        return toast.error('Correo duplicado.');
+      }
+      addClient({ ...newClient, id: email });
+      toast.success('Cliente añadido');
+    }
+    resetForm();
+    setIsFormVisible(false);  // ocultamos tras guardar
   };
- 
-  const handleDeleteClient = (id) => {
-   toast((t) => (
-    <div className="text-center">
-     <p className="font-semibold mb-3">¿Eliminar a este cliente?</p>
-     <div className="flex justify-center gap-4">
-      <button
-       className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
-       onClick={() => {
-        setClients((prevClients) =>
-         prevClients.filter((client) => client.id !== id)
-        );
-        toast.success('Cliente eliminado', { id: t.id });
-        toast.dismiss(t.id);
-       }}
-      >
-       Sí, eliminar
-      </button>
-      <button
-       className="bg-gray-300 hover:bg-gray-400 py-2 px-4 rounded"
-       onClick={() => toast.dismiss(t.id)}
-      >
-       Cancelar
-      </button>
-     </div>
-    </div>
-   ));
-  };
- 
-  const filteredClients = clients.filter((client) => {
-   const search = searchTerm.toLowerCase();
-   return (
-    client.nombre.toLowerCase().includes(search) ||
-    client.apellido.toLowerCase().includes(search) ||
-    client.documento.toLowerCase().includes(search) ||
-    client.telefono.toLowerCase().includes(search)
-   );
-  });
- 
-  // Function to get country name from code
-  const getCountryName = (code) => {
-   const country = countryCodes.find((c) => c.code === code);
-   return country ? country.name : 'Unknown';
-  };
- 
-  return (
-   <div className="card p-4 md:p-6">
-    <h2 className="text-xl font-semibold text-center mb-6 text-[var(--color-text-dark)] dark:text-[var(--color-text-light)]">
-     Lista de Clientes
-    </h2>
- 
-    <input
-     type="text"
-     placeholder="Buscar cliente..."
-     value={searchTerm}
-     onChange={(e) => setSearchTerm(e.target.value)}
-     className="input-base mb-4 w-full md:w-1/2"
-    />
- 
-    <button
-     onClick={() => setIsFormVisible(!isFormVisible)}
-     className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded mb-4"
-    >
-     {isFormVisible ? 'Ocultar Formulario' : 'Añadir Nuevo Cliente'}
-    </button>
- 
-    {isFormVisible && (
-     <div className="mb-4 p-4 bg-white rounded-md shadow-md dark:bg-neutral-darker">
-      <h3 className="text-lg font-semibold mb-3 dark:text-neutral-lighter">
-       Añadir Cliente
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-       <div>
-        <label
-         htmlFor="nombre"
-         className="block text-sm font-medium text-gray-700 dark:text-neutral-lighter"
-        >
-         Nombre
-        </label>
-        <input
-         type="text"
-         id="nombre"
-         name="nombre"
-         value={newClient.nombre}
-         onChange={handleInputChange}
-         className="input-base mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-neutral-dark dark:text-neutral-lighter"
-         required
-        />
-       </div>
-       <div>
-        <label
-         htmlFor="apellido"
-         className="block text-sm font-medium text-gray-700 dark:text-neutral-lighter"
-        >
-         Apellido
-        </label>
-        <input
-         type="text"
-         id="apellido"
-         name="apellido"
-         value={newClient.apellido}
-         onChange={handleInputChange}
-         className="input-base mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-neutral-dark dark:text-neutral-lighter"
-         required
-        />
-       </div>
-       <div>
-        <label
-         htmlFor="documento"
-         className="block text-sm font-medium text-gray-700 dark:text-neutral-lighter"
-        >
-         Documento
-        </label>
-        <input
-         type="text"
-         id="documento"
-         name="documento"
-         value={newClient.documento}
-         onChange={handleInputChange}
-         className="input-base mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-neutral-dark dark:text-neutral-lighter"
-         required
-        />
-       </div>
-       <div className="flex gap-2">
-        <div>
-         <label
-          htmlFor="pais"
-          className="block text-sm font-medium text-gray-700 dark:text-neutral-lighter"
-         >
-          País
-         </label>
-         <select
-          id="pais"
-          name="pais"
-          value={newClient.pais}
-          onChange={handleInputChange}
-          className="input-base mt-1 block w-40 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-neutral-dark dark:text-neutral-lighter"
-         >
-          {countryCodes.map((country) => (
-           <option key={country.code} value={country.code}>
-            {country.name} ({country.code})
-           </option>
-          ))}
-         </select>
-        </div>
-        <div className="flex-grow">
-         <label
-          htmlFor="telefono"
-          className="block text-sm font-medium text-gray-700 dark:text-neutral-lighter"
-         >
-          Teléfono
-         </label>
-         <input
-          type="tel"
-          id="telefono"
-          name="telefono"
-          value={newClient.telefono}
-          onChange={handleInputChange}
-          className="input-base mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-neutral-dark dark:text-neutral-lighter"
-          required
-         />
-        </div>
-       </div>
+
+  const remove = (id) => toast((t) => (
+    <div className="text-center space-y-3">
+      <p className="font-semibold">¿Eliminar cliente?</p>
+      <div className="flex justify-center gap-3">
+        <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={() => {
+          deleteClient(id);
+          toast.success('Eliminado', { id: t.id });
+          toast.dismiss(t.id);
+        }}>Sí</Button>
+        <Button onClick={() => toast.dismiss(t.id)} className="btn-ghost">Cancelar</Button>
       </div>
-      <button
-       onClick={handleAddClient}
-       className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded mt-4"
-      >
-       <PlusIcon className="h-4 w-4 mr-2 inline-block" />
-       Añadir Cliente
-      </button>
-     </div>
-    )}
- 
-    <div className="overflow-x-auto">
-     <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-darker">
-      <thead className="bg-gray-50 dark:bg-neutral-dark">
-       <tr>
-        <th
-         scope="col"
-         className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-light uppercase tracking-wider"
-        >
-         Nombre
-        </th>
-        <th
-         scope="col"
-         className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-light uppercase tracking-wider"
-        >
-         Apellido
-        </th>
-        <th
-         scope="col"
-         className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-light uppercase tracking-wider"
-        >
-         Documento
-        </th>
-        <th
-         scope="col"
-         className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-light uppercase tracking-wider"
-        >
-         País
-        </th>
-        <th
-         scope="col"
-         className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-light uppercase tracking-wider"
-        >
-         Teléfono
-        </th>
-        <th scope="col" className="relative py-3">
-         <span className="sr-only">Eliminar</span>
-        </th>
-       </tr>
-      </thead>
-      <tbody className="bg-white dark:bg-neutral-darker divide-y divide-gray-200 dark:divide-neutral-dark">
-       {filteredClients.map((client) => (
-        <tr
-         key={client.id}
-         className="hover:bg-gray-100 dark:hover:bg-neutral-dark"
-        >
-         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-neutral-lighter">
-          {client.nombre}
-         </td>
-         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-light">
-          {client.apellido}
-         </td>
-         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-light">
-          {client.documento}
-         </td>
-         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-light">
-          {getCountryName(client.pais)}
-         </td>
-         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-light">
-          {`${client.pais} ${client.telefono}`}
-         </td>
-         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-          <button
-           onClick={() => handleDeleteClient(client.id)}
-           className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-100"
-          >
-           <TrashIcon className="h-5 w-5" />
-          </button>
-         </td>
-        </tr>
-       ))}
-      </tbody>
-     </table>
     </div>
-   </div>
+  ));
+
+  const edit = (c) => {
+    setNewClient({ nombre: c.nombre, apellido: c.apellido, correo: c.correo, telefono: c.telefono });
+    setIsEditing(true);
+    setEditId(c.id);
+    setIsFormVisible(true);
+  };
+
+  const list = clients.filter((c) => (
+    [c.nombre, c.apellido, c.correo, c.telefono].join(' ').toLowerCase().includes(search.toLowerCase())
+  ));
+
+  return (
+    <div className="card p-6 space-y-6 animate-fade-in-up">
+      <h2 className="text-glass-title">Lista de Clientes</h2>
+
+      {/* Search + button */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <Input
+          type="text"
+          placeholder="Buscar cliente…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="md:flex-1"
+        />
+        <Button
+          onClick={() => {
+            if (!isFormVisible) {
+              // Se va a mostrar => limpiar campos / modo edición off
+              resetForm();
+            }
+            setIsFormVisible(!isFormVisible);
+          }}
+          className="md:flex-shrink-0 self-start md:self-auto"
+        >
+          <PlusIcon className="h-5 w-5 mr-2" />
+          {isFormVisible ? 'Ocultar Formulario' : 'Añadir Cliente'}
+        </Button>
+      </div>
+
+      {isFormVisible && (
+        <div className="card">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input name="nombre" value={newClient.nombre} onChange={handleInput} placeholder="Nombre" />
+            <Input name="apellido" value={newClient.apellido} onChange={handleInput} placeholder="Apellido" />
+            <Input name="correo" type="email" value={newClient.correo} onChange={handleInput} placeholder="Correo" />
+            <Input name="telefono" type="tel" value={newClient.telefono} onChange={handleInput} placeholder="Teléfono" />
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Button onClick={save}>
+              <PlusIcon className="h-4 w-4 mr-2" />
+              {isEditing ? 'Guardar' : 'Añadir'}
+            </Button>
+            {isEditing && <Button onClick={resetForm} className="btn-danger">Cancelar</Button>}
+          </div>
+        </div>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-darker">
+          <thead className="bg-gray-50 dark:bg-neutral-dark">
+            <tr>
+              {['Nombre','Apellido','Correo','Teléfono',''].map((h) => (
+                <th key={h} className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-light">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-white/5 dark:bg-white/5 divide-y divide-gray-200 dark:divide-neutral-dark">
+            {list.map((c) => (
+              <tr key={c.id} className="hover:bg-white/10 transition">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{c.nombre}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{c.apellido}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{c.correo}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{c.telefono}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm flex gap-2 justify-end">
+                  <button onClick={() => edit(c)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400" title="Editar"><PencilSquareIcon className="h-5 w-5" /></button>
+                  <button onClick={() => remove(c.id)} className="text-red-600 hover:text-red-800 dark:text-red-400" title="Eliminar"><TrashIcon className="h-5 w-5" /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
- };
- 
- export default ClientList;
+}
+
+
+
